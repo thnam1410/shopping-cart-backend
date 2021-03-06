@@ -1,6 +1,5 @@
 const Product = require("../models/product");
 const Category = require("../models/category");
-const mongoose = require("mongoose");
 
 class ProductController {
     // [GET] /product/
@@ -34,7 +33,7 @@ class ProductController {
     // [POST] /product/create
     async create(req, res) {
         //GET Files from multer middleware
-        const { name, price, sizes, category, tags } = req.body;
+        const { category, tags } = req.body;
         const { mainImage, ...subImages } = req.files;
 
         //Check if client upload subImages
@@ -43,16 +42,18 @@ class ProductController {
                   img.path.replace(/\\/g, "/")
               )
             : null;
-
+        const sizes = JSON.parse(req.body.sizes).map(({ size, quantity }) => ({
+            size: parseInt(size),
+            quantity: parseInt(quantity),
+        }));
         //Create Model's obj
         const productObj = {
             ...req.body,
-            sizes: JSON.parse(sizes),
+            sizes: sizes,
             mainImage: mainImage[0].path.replace(/\\/g, "/"),
             subImages: subImagePaths,
         };
         const product = new Product(productObj);
-
         // Insert data and insert product into category
         product
             .save()
@@ -82,26 +83,6 @@ class ProductController {
                 }
             })
             .catch((err) => res.status(500).json(err));
-        // if (category) {
-        //     for (let _category of category) {
-        //         _category = capitalizeFirstLetter(_category);
-        //         const productCaterogy = await Category.findOne({
-        //             name: _category,
-        //         });
-        //         if (!productCaterogy) {
-        //             const category = new Category({
-        //                 name: _category,
-        //                 products: [],
-        //             });
-        //             category.save(async (err, obj) => {
-        //                 await obj.products.push(product);
-        //             });
-        //             break;
-        //         }
-        //         await productCaterogy.products.push(product);
-        //         await productCaterogy.save();
-        //     }
-        // }
         res.status(200).send({ message: "Done" });
     }
 }
