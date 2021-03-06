@@ -4,18 +4,19 @@ const Product = require("./product");
 const Customer = require("./customer");
 
 const schemaOptions = {
-    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+    timestamps: true,
 };
 
 const Transaction = new Schema(
     {
         customer: Customer.schema,
-        products: [Product.schema],
+        products: Array,
         totalPrice: Number,
         paymentMethod: String,
         status: {
             type: String,
             enum: ["Submitted", "Cancelled", "Pending", "Shippng", "Done"],
+            default: "Submitted",
         },
     },
     schemaOptions
