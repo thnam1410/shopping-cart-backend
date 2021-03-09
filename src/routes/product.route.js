@@ -1,7 +1,7 @@
 const express = require("express");
 const productController = require("../controllers/product.controller");
 const multer = require("multer");
-const path = require("path")
+const path = require("path");
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
         callback(null, "./upload/");
@@ -18,17 +18,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const uploadFields = upload.fields([
     { name: "mainImage", maxCount: 1 },
-    { name: "subImages[]", maxCount: 4 }
-    ])
+    { name: "subImages[]", maxCount: 4 },
+]);
 const router = express.Router();
 
 router.get("/", productController.index);
 router.get("/category_name", productController.getCategory);
 router.get("/:id", productController.getItem);
-router.post(
-    "/create",
-    uploadFields,
-    productController.create
-);
+router.post("/create", uploadFields, productController.create);
 
 module.exports = router;
