@@ -33,3 +33,28 @@ exports.getTransactionDetails = async (req, res) => {
         return res.status(400).json({ message: "Server Error" });
     }
 };
+// [POST] /api/transaction-status
+exports.changeTransactionStatus = async (req, res) => {
+    try {
+        // console.log(req.body);
+        const { _id, status } = req.body;
+        const transaction = await Transaction.findOneAndUpdate(
+            { _id: _id },
+            {
+                status: status,
+            },
+            {
+                new: true,
+            }
+        );
+        if (!transaction) {
+            return res
+                .status(500)
+                .json({ message: "Can not find Transaction" });
+        }
+        return res.status(200).json({ message: "Update successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({ message: "Server Error" });
+    }
+};

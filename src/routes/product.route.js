@@ -26,5 +26,6 @@ router.get("/", productController.index);
 router.get("/category_name", productController.getCategory);
 router.get("/:id", productController.getItem);
 router.post("/create", uploadFields, productController.create);
+router.post("/update", uploadFields, productController.update);
 
 module.exports = router;

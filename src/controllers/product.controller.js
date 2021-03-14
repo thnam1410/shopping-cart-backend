@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const Category = require("../models/category");
-
+const fs = require("fs");
+const mongoose = require("mongoose");
 class ProductController {
     // [GET] /product/
     async index(req, res) {
@@ -32,58 +33,161 @@ class ProductController {
 
     // [POST] /product/create
     async create(req, res) {
-        //GET Files from multer middleware
-        const { category, tags } = req.body;
-        const { mainImage, ...subImages } = req.files;
+        try {
+            //GET Files from multer middleware
+            const { category, tags } = req.body;
+            const { mainImage, ...subImages } = req.files;
 
-        //Check if client upload subImages
-        const subImagePaths = subImages["subImages[]"]
-            ? subImages["subImages[]"].map((img) =>
-                  img.path.replace(/\\/g, "/")
-              )
-            : null;
-        const sizes = JSON.parse(req.body.sizes).map(({ size, quantity }) => ({
-            size: parseInt(size),
-            quantity: parseInt(quantity),
-        }));
-        //Create Model's obj
-        const productObj = {
-            ...req.body,
-            sizes: sizes,
-            mainImage: mainImage[0].path.replace(/\\/g, "/"),
-            subImages: subImagePaths,
-        };
-        const product = new Product(productObj);
-        // Insert data and insert product into category
-        product
-            .save()
-            .then(async (res) => {
-                const { caterogy } = res;
-                if (category) {
-                    for (let _category of category) {
-                        _category = capitalizeFirstLetter(_category);
-                        const productCaterogy = await Category.findOne({
-                            name: _category,
-                        });
-                        if (!productCaterogy) {
-                            const category = new Category({
+            //Check if client upload subImages
+            const subImagePaths = subImages["subImages[]"]
+                ? subImages["subImages[]"].map((img) =>
+                      img.path.replace(/\\/g, "/")
+                  )
+                : null;
+            const sizes = JSON.parse(req.body.sizes).map(
+                ({ size, quantity }) => ({
+                    size: size,
+                    quantity: parseInt(quantity),
+                })
+            );
+            //Create Model's obj
+            const productObj = {
+                ...req.body,
+                sizes: sizes,
+                mainImage: mainImage[0].path.replace(/\\/g, "/"),
+                subImages: subImagePaths,
+            };
+            const product = new Product(productObj);
+            // Insert data and insert product into category
+            product
+                .save()
+                .then(async (res) => {
+                    const { caterogy } = res;
+                    if (category) {
+                        for (let _category of category) {
+                            _category = capitalizeFirstLetter(_category);
+                            const productCategory = await Category.findOne({
                                 name: _category,
-                                products: [],
                             });
-                            category.save().then(async (categoryAfterSaved) => {
-                                await categoryAfterSaved.products.push(res);
-                                await categoryAfterSaved.save();
-                            });
-                            break;
-                        }
+                            if (!productCategory) {
+                                const category = new Category({
+                                    name: _category,
+                                    products: [],
+                                });
+                                category
+                                    .save()
+                                    .then(async (categoryAfterSaved) => {
+                                        await categoryAfterSaved.products.push(
+                                            res
+                                        );
+                                        await categoryAfterSaved.save();
+                                    });
+                                break;
+                            }
 
-                        await productCaterogy.products.push(product);
-                        await productCaterogy.save();
+                            await productCategory.products.push(product);
+                            await productCategory.save();
+                        }
                     }
+                })
+                .catch((err) => res.status(500).json(err));
+            res.status(200).send({ message: "Done" });
+        } catch (error) {
+            console.log(error);
+            return res.status(200).json({ error: error });
+        }
+    }
+    // [POST] /product/update
+    async update(req, res) {
+        try {
+            const { id, name, price, category } = req.body;
+            const { mainImage, ...subImages } = req.files;
+            const sizes = JSON.parse(req.body.sizes).map(
+                ({ size, quantity }) => ({
+                    size: size,
+                    quantity: parseInt(quantity),
+                })
+            );
+            const mainImagePath = mainImage ? mainImage[0].path : null;
+            const subImagePaths = subImages["subImages[]"]
+                ? subImages["subImages[]"].map((img) =>
+                      img.path.replace(/\\/g, "/")
+                  )
+                : null;
+            // Update new value for Product
+            const product = await Product.findByIdAndUpdate(
+                id,
+                {
+                    name,
+                    price,
+                    category,
+                    sizes,
+                },
+                { new: true }
+            );
+            // Update new imagesPath
+            if (mainImagePath) {
+                const previousMainImage = product.mainImage;
+                if (fs.existsSync(previousMainImage)) {
+                    fs.unlinkSync(previousMainImage);
                 }
-            })
-            .catch((err) => res.status(500).json(err));
-        res.status(200).send({ message: "Done" });
+                product.mainImage = mainImagePath;
+            }
+            if (subImagePaths) {
+                const previousSubImages = product.subImagePaths;
+                if (previousSubImages) {
+                    previousSubImages.forEach((imagePath) => {
+                        if (fs.existsSync(imagePath)) {
+                            fs.unlinkSync(imagePath);
+                        }
+                    });
+                }
+                product.subImages = subImagePaths;
+            }
+            await product.save();
+
+            // Process in Category
+            for (let _cate of category) {
+                const isExistedCategory = await Category.findOne({
+                    name: _cate,
+                });
+                if (!isExistedCategory) {
+                    const newCategory = new Category({
+                        name: _cate,
+                        products: [],
+                    });
+                    await newCategory.save();
+                }
+            }
+            // Create Category If Not Exist
+            const allCategory = await Category.find({});
+            for (let _cate of allCategory) {
+                // Remove item Category does not in Item's new Category list
+                if (!category.includes(_cate.name)) {
+                    _cate.products = _cate.products.filter(
+                        (item) => item._id !== id
+                    );
+                    await _cate.save();
+                    continue;
+                }
+                // Add value to each Category Documents
+                const isExistedProductInCategory =
+                    _cate.products.filter((item) => item._id == id).length !== 0
+                        ? true
+                        : false;
+                if (!isExistedProductInCategory) {
+                    await Category.updateOne(
+                        { name: _cate.name },
+                        { $push: { products: product } }
+                    );
+                }
+            }
+
+            res.status(200).json({ message: "ok" });
+        } catch (error) {
+            console.log(error);
+            return res.status(200).json({ error: error });
+        }
     }
 }
 
