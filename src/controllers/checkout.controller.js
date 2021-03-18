@@ -35,18 +35,8 @@ exports.checkOutPayment = async (req, res) => {
 };
 
 // Find Customer || Create Customer
-const getCustomer = async ({ email, fullName, phoneNumber, address }) => {
+const getCustomer = async ({ email }) => {
     const existedCustomer = await Customer.findOne({ email: email });
-    if (!existedCustomer) {
-        const customer = new Customer({
-            email,
-            fullName,
-            phoneNumber,
-            address,
-        });
-        const savedCustomer = await customer.save();
-        if (savedCustomer) return savedCustomer;
-    }
     return existedCustomer;
 };
 
