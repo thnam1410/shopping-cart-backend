@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const Schema = mongoose.Schema;
 const Product = require("./product");
-const Customer = require("./customer");
+const User = require("./user");
 
 const schemaOptions = {
     timestamps: true,
@@ -10,7 +10,7 @@ const schemaOptions = {
 
 const Transaction = new Schema(
     {
-        customer: Customer.schema,
+        customer: User.schema,
         products: Array,
         totalPrice: Number,
         paymentMethod: String,

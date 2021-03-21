@@ -1,6 +1,6 @@
 const Product = require("../models/product");
 const Transaction = require("../models/transaction");
-const Customer = require("../models/customer");
+const User = require("../models/user");
 
 // POST /api/checkout
 exports.checkOutPayment = async (req, res) => {
@@ -8,7 +8,6 @@ exports.checkOutPayment = async (req, res) => {
     try {
         // Get Customer
         const customer = await getCustomer(paymentInformations);
-
         // Create Transaction
         const allProductsPurchased = await getAllProducts(cart);
         const totalPrice = cart.reduce(
@@ -36,7 +35,7 @@ exports.checkOutPayment = async (req, res) => {
 
 // Find Customer || Create Customer
 const getCustomer = async ({ email }) => {
-    const existedCustomer = await Customer.findOne({ email: email });
+    const existedCustomer = await User.findOne({ email: email });
     return existedCustomer;
 };
 
