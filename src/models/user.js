@@ -31,7 +31,11 @@ userSchema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this;
     const token = jwt.sign(
-        { _id: user._id, exp: Math.floor(Date.now() / 1000) + 1 * 60 },
+        {
+            _id: user._id,
+            exp: Math.floor(Date.now() / 1000) + 5 * 60,
+            role: user.role,
+        },
         process.env.SECRET_KEY
     );
     await user.save();

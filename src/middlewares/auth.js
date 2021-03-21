@@ -21,6 +21,49 @@ exports.auth = async (req, res, next) => {
         });
     }
 };
+
+exports.authAdmin = async (req, res, next) => {
+    try {
+        const token = req.header("Authorization").replace("Bearer ", "");
+        const data = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findOne({
+            _id: data._id,
+        });
+        if (!user) {
+            throw new Error();
+        }
+        if (user.role !== "Admin") {
+            throw new Error();
+        }
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            error: "Can not access",
+        });
+    }
+};
+exports.authAdminAndManager = async (req, res, next) => {
+    try {
+        const token = req.header("Authorization").replace("Bearer ", "");
+        const data = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findOne({
+            _id: data._id,
+        });
+        if (!user) {
+            throw new Error();
+        }
+        if (user.role === "User") {
+            throw new Error();
+        }
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            error: "Can not access",
+        });
+    }
+};
 exports.checkExpiredToken = async (req, res, next) => {
     try {
         const exp = req.exp;

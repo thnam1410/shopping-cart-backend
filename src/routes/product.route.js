@@ -2,6 +2,7 @@ const express = require("express");
 const productController = require("../controllers/product.controller");
 const multer = require("multer");
 const path = require("path");
+const { authAdmin } = require("../middlewares/auth");
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
         callback(null, "./upload/");
@@ -25,7 +26,7 @@ const router = express.Router();
 router.get("/", productController.index);
 router.get("/category_name", productController.getCategory);
 router.get("/:id", productController.getItem);
-router.post("/create", uploadFields, productController.create);
-router.post("/update", uploadFields, productController.update);
-
+router.post("/create", authAdmin, uploadFields, productController.create);
+router.post("/update", authAdmin, uploadFields, productController.update);
+router.delete("/delete/:id", authAdmin, productController.delete);
 module.exports = router;

@@ -6,10 +6,14 @@ const {
     getTransactionDetails,
     changeTransactionStatus,
 } = require("../controllers/transaction.controller");
-
+const { authAdmin, authAdminAndManager } = require("../middlewares/auth");
 router.post("/checkout", checkOutPayment);
-router.get("/transaction", getAllTransaction);
-router.get("/transaction-detail", getTransactionDetails);
-router.post("/transaction-status", changeTransactionStatus);
+router.get("/transaction", authAdminAndManager, getAllTransaction);
+router.get("/transaction-detail", authAdminAndManager, getTransactionDetails);
+router.post(
+    "/transaction-status",
+    authAdminAndManager,
+    changeTransactionStatus
+);
 
 module.exports = router;

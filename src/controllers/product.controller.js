@@ -2,6 +2,7 @@ const Product = require("../models/product");
 const Category = require("../models/category");
 const fs = require("fs");
 const mongoose = require("mongoose");
+const { find } = require("../models/product");
 class ProductController {
     // [GET] /product/
     async index(req, res) {
@@ -187,6 +188,33 @@ class ProductController {
         } catch (error) {
             console.log(error);
             return res.status(200).json({ error: error });
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const { mainImage, subImages } = await Product.findById(id);
+
+            await Product.findOneAndRemove({ _id: id });
+            if (mainImage) {
+                if (fs.existsSync(mainImage)) {
+                    fs.unlinkSync(mainImage);
+                }
+            }
+            if (subImages) {
+                if (subImages) {
+                    subImages.forEach((imagePath) => {
+                        if (fs.existsSync(imagePath)) {
+                            fs.unlinkSync(imagePath);
+                        }
+                    });
+                }
+            }
+
+            res.status(200).json("oke");
+        } catch (err) {
+            console.log(err);
         }
     }
 }
