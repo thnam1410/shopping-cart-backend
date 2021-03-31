@@ -43,6 +43,26 @@ exports.authAdmin = async (req, res, next) => {
         });
     }
 };
+exports.authUser = async(req, res, next) => {
+    try {
+        const token = req.header("Authorization").replace("Bearer ", "");
+        const data = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findOne({
+            _id: data._id,
+        });
+        if (!user) {
+            throw new Error("Can not find User");
+        }
+
+        req.user = user
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(401).json({
+            error: "Can not access",
+        });
+    }
+}
 exports.authAdminAndManager = async (req, res, next) => {
     try {
         const token = req.header("Authorization").replace("Bearer ", "");
@@ -59,7 +79,7 @@ exports.authAdminAndManager = async (req, res, next) => {
         next();
     } catch (error) {
         console.log(error);
-        res.status(404).json({
+        res.status(401).json({
             error: "Can not access",
         });
     }
