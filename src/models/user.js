@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const mongoosePaginate = require("mongoose-paginate");
 require("dotenv").config();
 
 const userSchema = mongoose.Schema({
@@ -55,6 +56,8 @@ userSchema.statics.findByCredentials = async (username, password) => {
     }
     return user;
 };
+
+userSchema.plugin(mongoosePaginate)
 
 const User = mongoose.model("User", userSchema, "users");
 

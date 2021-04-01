@@ -59,18 +59,3 @@ exports.changeTransactionStatus = async (req, res) => {
     }
 };
 
-// [GET] /api/user/transaction
-exports.getUserTransactionDetails = async (req, res) => {
-    try{
-        const userEmail = req.user.email
-
-        const userTransactions = await Transaction.find({
-            "customer.email": userEmail
-        })
-
-        return res.status(200).send({ data: userTransactions})
-    }catch(error){
-        console.log(error);
-        return res.status(500).json({ message: "Server Error" });
-    }
-}
