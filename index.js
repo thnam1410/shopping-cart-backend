@@ -11,26 +11,23 @@ db.connect();
 const app = express();
 const port = 5000;
 
-//Config swagger
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUI  = require('swagger-ui-express');
 
-const swaggerOptions = {
-    swaggerDefinition: {
-        info:{
-            title: "Shopping Cart API",
-            description: "Shopping Cart API Documment",
-            contact:{
-                name: "SOA"
-            },
-            servers: ['http://localhost:5000/']
-        }
-    },
-    apis: ["./src/routes/index.js"]
-}
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/swagger',swaggerUI.serve, swaggerUI.setup(swaggerDocs))
-app.use('/test',(req,res) => res.status(200).send('ok'))
+// const swaggerOptions = {
+//     swaggerDefinition: {
+//         info:{
+//             title: "Shopping Cart API",
+//             description: "Shopping Cart API Documment",
+//             contact:{
+//                 name: "SOA"
+//             },
+//             servers: ['http://localhost:5000/']
+//         }
+//     },
+//     apis: ["./src/routes/index.js"]
+// }
+// const swaggerDocs = swaggerJsdoc(swaggerOptions);
+// app.use('/swagger',swaggerUI.serve, swaggerUI.setup(swaggerDocs))
+// app.use('/test',(req,res) => res.status(200).send('ok'))
 
 //Middlewares
 app.use(cors());

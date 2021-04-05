@@ -26,7 +26,24 @@ const router = express.Router();
 router.get("/", productController.index);
 router.get("/category_name", productController.getCategory);
 router.get("/:id", productController.getItem);
+
+/*
+* FormData{
+*   mainImage: image
+*   subImages: image/images
+*   name: string
+    price: number
+    sizes: string => [
+    *                   { size: xx, quantity: xx }
+    *                   { size: xx, quantity: xx }
+    *                ]    Truyền xuống = JSON.Stringify, backend tự động xử lý
+    category: Array[string] VD: ["Sneaker","Adidas"]
+    tags: Array[string] VD: ["Sneaker","Adidas"]
+* }*/
 router.post("/create", authAdmin, uploadFields, productController.create);
+/*
+* Tương tự trên
+* */
 router.post("/update", authAdmin, uploadFields, productController.update);
 router.delete("/delete/:id", authAdmin, productController.delete);
 module.exports = router;

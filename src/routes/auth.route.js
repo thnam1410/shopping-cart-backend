@@ -13,19 +13,27 @@ const {
     checkUsernameOrEmailExisted,
     checkExpiredToken,
 } = require("../middlewares/auth");
+
 /*
-* @swagger
-* /books:
-*   get:
-*       summary: abcxyz
-*       responses:
-*           200:
-*               description: wtf
-**/
+* body:{
+*   username: string
+*   password: string
+* }
+* */
 router.post("/login", login);
+
+/*'
+body:{
+    username: string,
+    password: string,
+    email: string,
+    fullName: string,
+    address: string,
+    phoneNumber: string,
+* }
+* */
 router.post("/register", checkUsernameOrEmailExisted, register);
 router.get("/user/me", auth, checkExpiredToken, getProfile);
 router.get("/user/check_token", checkToken);
-// router.get("/user/logout", authMiddleware, logout);
 
 module.exports = router;

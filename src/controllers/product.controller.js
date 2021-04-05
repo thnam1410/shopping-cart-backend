@@ -4,12 +4,25 @@ const fs = require("fs");
 const mongoose = require("mongoose");
 const { find } = require("../models/product");
 class ProductController {
-    // [GET] /product/
+    // [GET] /product
     async index(req, res) {
-        Product.find({}, (err, products) => {
-            if (err) res.status(400).json({ error: "ERROR!!!" });
-            res.json(products);
-        });
+        try{
+            const { page, limit, sort, category } = req.query;
+            console.log(sort)
+            const options = {
+                page: parseInt(page, 10) || 1,
+                limit: parseInt(limit, 10) || 10,
+                sort: sort ? { price: sort === 'asc' ? 1 : -1 } : null
+            };
+            //         const products = await Product.paginate({ category: { $regex: new RegExp(category_name,'i')} }, options);
+            const products = category
+                                ? await Product.paginate({ category: { $regex: new RegExp(category,'i')} }, options)
+                                : await Product.paginate({}, options)
+            return res.status(200).json(products);
+        }catch (e) {
+            console.log(e);
+            return res.status(500).json({ message: "Server Error" });
+        }
     }
     // [GET] /product/:id
     async getItem(req, res) {
@@ -217,6 +230,23 @@ class ProductController {
             console.log(err);
         }
     }
+    // async getItemByCategory(req, res){
+    //     try{
+    //         const { category_name } = req.params;
+    //         const { page, limit, sort } = req.query;
+    //
+    //         const options = {
+    //             page: parseInt(page, 10) || 1,
+    //             limit: parseInt(limit, 10) || 10,
+    //             sort: sort ? { price: sort === 'asc' ? 1 : -1 } : null
+    //         };
+    //         const products = await Product.paginate({ category: { $regex: new RegExp(category_name,'i')} }, options);
+    //         return res.status(200).json(products);
+    //     }catch (e) {
+    //         console.log(e);
+    //         return res.status(500).json({ message: "Server Error" });
+    //     }
+    // }
 }
 
 function capitalizeFirstLetter(string) {
