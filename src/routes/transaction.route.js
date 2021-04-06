@@ -5,7 +5,8 @@ const {
     getAllTransaction,
     getTransactionDetails,
     changeTransactionStatus,
-    getUserTransactionDetails
+    getUserTransactionDetails,
+    createPaymentIntent,
 } = require("../controllers/transaction.controller");
 const { authAdmin, authAdminAndManager } = require("../middlewares/auth");
 
@@ -34,5 +35,19 @@ body:{
 
  */
 router.post("/transaction-status",authAdminAndManager,changeTransactionStatus);
+/*
+body:
+    [
+        {
+            name: string - 'Yeezy 700 OG',
+            price: string - 17500000,
+            size: string - '46',
+            quantity: number - 1,
+            img: string - 'upload/2021-02-22T14-04-34.627Z_.jpg'
+        },...
+    ]
+
+ */
+router.post("/transaction/create-payment-intent",createPaymentIntent)
 
 module.exports = router;

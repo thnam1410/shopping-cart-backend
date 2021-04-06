@@ -1,15 +1,25 @@
+require("dotenv").config();
 const Transaction = require("../models/transaction");
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // [GET] /api/transaction
 exports.getAllTransaction = async (req, res) => {
     try {
-        const { page, limit } = req.query;
+        const { page, limit, status, phone, method } = req.query;
         const options = {
             page: parseInt(page, 10) || 1,
             limit: parseInt(limit, 10) || 10,
             sort: { createdAt: -1 },
         };
-        const transactions = await Transaction.paginate({}, options);
+
+        let filter = {
+            status,
+            paymentMethod: method,
+            "customer.phoneNumber": phone && { $regex: new RegExp(phone,'i')}
+        }
+        Object.keys(filter).forEach(key => filter[key] === undefined && delete filter[key])
+
+        console.log(filter)
+        const transactions = await Transaction.paginate(filter, options);
         return res.status(200).json(transactions);
     } catch (err) {
         console.log(err);
@@ -59,3 +69,30 @@ exports.changeTransactionStatus = async (req, res) => {
     }
 };
 
+//[POST] /api/transaction/create-payment-intent
+exports.createPaymentIntent = async (req, res) => {
+    try {
+        const {cart} = req.body;
+        const totalPrice = cart.reduce((total, item) => (total += item.price * item.quantity), 0)
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: totalPrice,
+            currency: "vnd"
+        });
+        res.send({
+            clientSecret: paymentIntent.client_secret
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(400).json({message: "Items not found"})
+    }
+}
+/*
+Payment succeeds
+4242 4242 4242 4242
+
+Authentication required
+4000 0025 0000 3155
+
+Payment is declined
+4000 0000 0000 9995
+*/

@@ -4,7 +4,7 @@ const User = require("../models/user");
 
 // POST /api/checkout
 exports.checkOutPayment = async (req, res) => {
-    const { cart, paymentInformations } = req.body;
+    const { cart, paymentInformations, visaConfirm } = req.body;
     try {
         // Get Customer
         const customer = await getCustomer(paymentInformations);
@@ -14,12 +14,23 @@ exports.checkOutPayment = async (req, res) => {
             (total, { price }) => (total += parseInt(price)),
             0
         );
-        const transaction = new Transaction({
+        console.log(visaConfirm)
+        const transaction = visaConfirm ?
+            new Transaction({
             totalPrice,
             customer: customer,
             products: allProductsPurchased,
             paymentMethod: paymentInformations.paymentMethod,
-        });
+                status: "Pending"
+        }) : new Transaction({
+                totalPrice,
+                customer: customer,
+                products: allProductsPurchased,
+                paymentMethod: paymentInformations.paymentMethod,
+            })
+
+
+        ;
         // Save transaction
         const savedTransaction = await transaction.save();
         if (!savedTransaction) throw TypeError("Can not create transaction");
