@@ -1,3 +1,10 @@
+require('dotenv').config()
+const aws = require('aws-sdk')
+const s3 = new aws.S3({
+    accessKeyId: process.env.AWS_ID,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+    bucket: process.env.AWS_BUCKET_NAME,
+})
 const Product = require("../models/product");
 const Category = require("../models/category");
 const fs = require("fs");
@@ -53,10 +60,15 @@ class ProductController {
             const { mainImage, ...subImages } = req.files;
 
             //Check if client upload subImages
+            // const subImagePaths = subImages["subImages[]"]
+            //     ? subImages["subImages[]"].map((img) =>
+            //           img.path.replace(/\\/g, "/")
+            //       )
+            //     : null;
             const subImagePaths = subImages["subImages[]"]
                 ? subImages["subImages[]"].map((img) =>
-                      img.path.replace(/\\/g, "/")
-                  )
+                    img.location
+                )
                 : null;
             const sizes = JSON.parse(req.body.sizes).map(
                 ({ size, quantity }) => ({
@@ -68,7 +80,7 @@ class ProductController {
             const productObj = {
                 ...req.body,
                 sizes: sizes,
-                mainImage: mainImage[0].path.replace(/\\/g, "/"),
+                mainImage: mainImage[0].location,
                 subImages: subImagePaths,
             };
             const product = new Product(productObj);
@@ -122,11 +134,16 @@ class ProductController {
                     quantity: parseInt(quantity),
                 })
             );
-            const mainImagePath = mainImage ? mainImage[0].path : null;
+            const mainImagePath = mainImage ? mainImage[0].location : null;
+            // const subImagePaths = subImages["subImages[]"]
+            //     ? subImages["subImages[]"].map((img) =>
+            //           img.path.replace(/\\/g, "/")
+            //       )
+            //     : null;
             const subImagePaths = subImages["subImages[]"]
                 ? subImages["subImages[]"].map((img) =>
-                      img.path.replace(/\\/g, "/")
-                  )
+                    img.location
+                )
                 : null;
             // Update new value for Product
             const product = await Product.findByIdAndUpdate(
@@ -141,21 +158,11 @@ class ProductController {
             );
             // Update new imagesPath
             if (mainImagePath) {
-                const previousMainImage = product.mainImage;
-                if (fs.existsSync(previousMainImage)) {
-                    fs.unlinkSync(previousMainImage);
-                }
+                if(product.mainImage) deleteMainImage(product.mainImage);
                 product.mainImage = mainImagePath;
             }
             if (subImagePaths) {
-                const previousSubImages = product.subImagePaths;
-                if (previousSubImages) {
-                    previousSubImages.forEach((imagePath) => {
-                        if (fs.existsSync(imagePath)) {
-                            fs.unlinkSync(imagePath);
-                        }
-                    });
-                }
+                if(product.subImages) deleteSubImages(product.subImages);
                 product.subImages = subImagePaths;
             }
             await product.save();
@@ -211,18 +218,10 @@ class ProductController {
 
             await Product.findOneAndRemove({ _id: id });
             if (mainImage) {
-                if (fs.existsSync(mainImage)) {
-                    fs.unlinkSync(mainImage);
-                }
+                deleteMainImage(mainImage)
             }
             if (subImages) {
-                if (subImages) {
-                    subImages.forEach((imagePath) => {
-                        if (fs.existsSync(imagePath)) {
-                            fs.unlinkSync(imagePath);
-                        }
-                    });
-                }
+                deleteSubImages(subImages)
             }
 
             res.status(200).json("oke");
@@ -252,5 +251,34 @@ class ProductController {
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
-
+function deleteMainImage(mainImagePath){
+    let obj = mainImagePath.split('/')
+    let deleteParam = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Delete: {
+            Objects: [
+                {Key: obj[obj.length-1]},
+            ]
+        }
+    };
+    s3.deleteObjects(deleteParam, function(err, data) {
+        if (err) console.log(err, err.stack);
+        else console.log('delete', data);
+    });
+}
+function deleteSubImages(subImages){
+    let deleteParam = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Delete: {
+            Objects: [...subImages.map(path => {
+                let obj = path.split('/')
+                return {Key: obj[obj.length-1]}
+            })]
+        }
+    };
+    s3.deleteObjects(deleteParam, function(err, data) {
+        if (err) console.log(err, err.stack);
+        else console.log('delete', data);
+    });
+}
 module.exports = new ProductController();
