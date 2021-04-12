@@ -78,6 +78,8 @@ exports.createPaymentIntent = async (req, res) => {
             amount: totalPrice,
             currency: "vnd"
         });
+	console.log("DEBUG:::")
+	console.log(paymentIntent)
         res.send({
             clientSecret: paymentIntent.client_secret
         });
