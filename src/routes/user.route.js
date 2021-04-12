@@ -1,4 +1,4 @@
-const {getUserTransactionDetails, getAllUser, updateUserRole} = require("../controllers/user.controller");
+const {getUserTransactionDetails, getAllUser, updateUserRole, deleteUser, forgotPassword} = require("../controllers/user.controller");
 const {authUser, authAdmin} = require("../middlewares/auth");
 const express = require('express')
 const router = express.Router()
@@ -14,5 +14,7 @@ body:{
 }
  */
 router.post('/update-role', authAdmin, updateUserRole)
+router.delete('/delete', authAdmin, deleteUser)
 
+// router.post('/forgot-password', forgotPassword)
 module.exports = router;
