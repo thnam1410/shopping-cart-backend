@@ -7,6 +7,7 @@ const {
     changeTransactionStatus,
     getUserTransactionDetails,
     createPaymentIntent,
+    sendMail
 } = require("../controllers/transaction.controller");
 const { authAdmin, authAdminAndManager } = require("../middlewares/auth");
 
@@ -49,5 +50,7 @@ body:
 
  */
 router.post("/transaction/create-payment-intent",createPaymentIntent)
+
+router.post('/send-mail', sendMail)
 
 module.exports = router;
