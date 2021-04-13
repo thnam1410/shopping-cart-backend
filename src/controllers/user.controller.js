@@ -97,6 +97,7 @@ exports.forgotPassword = async (req, res) => {
             },
         });
         const directionLink = `${process.env.CLIENT_URL}/reset_password/confirm?token=${token}`
+        console.log(directionLink)
         const mailContent = `
         <div>
             <h3>Please <a href="${directionLink}">click here</a> to confirm and reset your password</h3>
