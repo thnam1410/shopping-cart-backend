@@ -87,8 +87,10 @@ exports.forgotPassword = async (req, res) => {
         let transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
-            ignoreTLS: false,
-            secure: false,
+            tls: {
+                ciphers: 'SSLv3'
+            },
+            requireTLS: true,
             auth: {
                 user: process.env.GMAIL_USERNAME, // generated ethereal user
                 pass: process.env.GMAIL_PASSWORD, // generated ethereal password
