@@ -117,6 +117,7 @@ exports.sendMail = async(req, res) => {
             },
         });
 
+
         const mailContent = `
         <div> 
             <h2>Thanks for your shopping!!</h2>
