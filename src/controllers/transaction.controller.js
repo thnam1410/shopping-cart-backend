@@ -105,6 +105,7 @@ exports.sendMail = async(req, res) => {
     try {
         const { fullName, email, address, paymentMethod } = req.body.paymentInformations
         const { cart } = req.body
+        console.log(req.body)
         let transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
@@ -120,13 +121,16 @@ exports.sendMail = async(req, res) => {
         <div> 
             <h2>Thanks for your shopping!!</h2>
             <h3>Payment Details</h3>
-            <p>Customer: <span style="font-size: 16px; font-weight: 700; color: red">${fullName}</span></p>
+            <p>Customer: <span style="font-size: 16px; font-weight: 700; color: #ff0000">${fullName}</span></p>
             <p>Email: <span style="font-size: 16px; font-weight: 700; color: red">${email}</span></p>
             <p>Address: <span style="font-size: 16px; font-weight: 700">${address}</span></p>
             <p>Payment Method: <span style="font-size: 16px; font-weight: 700">${paymentMethod}</span></p>
             <br>
             <h3>Cart Details:</h3>
-            <p><b style="font-size: 16px">Total</b>: <span style="font-size: 16px; font-weight: 700; color: red">${cart.reduce((total,item) => total+=(item.price * item.quantity),0).toLocaleString("it-IT",{style: "currency",currency: "VND",})}</span></p>
+            <p><b style="font-size: 16px">Total</b>: <span style="font-size: 16px; font-weight: 700; color: red">${cart.reduce((total, item) => total += (item.price * item.quantity), 0).toLocaleString("it-IT", {
+            style: "currency",
+            currency: "VND",
+        })}</span></p>
             ${cart.map(item => (
             `<ul>
                 <li>Name: ${item.name}</li>

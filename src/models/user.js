@@ -17,6 +17,10 @@ const userSchema = mongoose.Schema({
         enum: ["Admin", "Manager", "User"],
         default: "User",
     },
+    resetToken: {
+        type: String,
+        default: null,
+    }
 });
 
 userSchema.pre("save", async function (next) {
