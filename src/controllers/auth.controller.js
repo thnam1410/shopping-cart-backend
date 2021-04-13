@@ -18,6 +18,7 @@ exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findByCredentials(username, password);
+        console.log('debug')
         if (!user) {
             return res.status(401).send({
                 error: "Login failed! Check authentication credentials",
@@ -26,6 +27,7 @@ exports.login = async (req, res) => {
         const token = await user.generateAuthToken();
         res.send({ username: user.username, token, role: user.role });
     } catch (error) {
+        console.log(error)
         res.status(400).send(error);
     }
 };
